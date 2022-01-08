@@ -1,16 +1,16 @@
 import pygame
 import random
 
-BLOCK_SIZE = 20
-WIDTH = 800
+BLOCK_SIZE = 15
+WIDTH = 900
 HEIGHT = WIDTH + (BLOCK_SIZE*2)
 ROWS = int(WIDTH/BLOCK_SIZE)
-COLS = int(HEIGHT/BLOCK_SIZE)
+COLS = int(WIDTH/BLOCK_SIZE)
 WHITE = (255, 255, 255)
 BLACK = (0, 0 , 0)
 SILVER = (192, 192, 192)
 RED = (255, 0 , 0)
-FPS = 20
+FPS = 120
 
 def intialGeneration():
     array = []
@@ -84,6 +84,44 @@ def displayStats(genCount, liveCount):
     message = pygame.font.SysFont("arial", BLOCK_SIZE * 2).render("Generation: " + str(genCount) + " Live Cells: " + str(liveCount), True, RED)
     gameDisplay.blit(message, [0, HEIGHT-BLOCK_SIZE*2])
 
+def drawInit():
+    for y in range(ROWS):
+        for x in range(COLS):
+            pygame.draw.rect(gameDisplay, BLACK, [x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE], 1)
+
+    pygame.display.flip()
+
+    drawCell = False
+    coordinates = []
+    initGen = []
+
+    for y in range(ROWS):
+        col = []
+        for x in range(COLS):
+            col.append(0)
+        initGen.append(col) 
+
+    while not drawCell:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    drawCell = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                if x % 15 != 0 or y % 15 != 0:
+                    x = int(x/15) * 15
+                    y = int(y/15) * 15
+                    pygame.draw.rect(gameDisplay, BLACK, [x, y, BLOCK_SIZE, BLOCK_SIZE], 0)
+                    pygame.display.flip() 
+                coordinates.append([x,y])
+
+    for coord in coordinates:
+        x = int(coord[0]/15)
+        y = int(coord[1]/15)
+        initGen[y][x] = 1
+
+    return initGen
+
 def main():
     global gameDisplay
     pygame.init()
@@ -100,12 +138,40 @@ def main():
     grid, liveCount = intialGeneration()
 
     simulationExit = False
+    simulationStart = True
 
     while not simulationExit:
+
+        while simulationStart:
+            gameDisplay.fill(WHITE)
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    simulationExit = True
+                    pygame.quit()
+                    exit()
+                if simulationStart:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_q:
+                            simulationExit = True
+                            pygame.quit()
+                            exit()
+
+                        if event.key == pygame.K_c:
+                            grid = drawInit()
+                            simulationStart = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 simulationExit = True
-                    
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    simulationExit = True
+                    exit()
+                if event.key == pygame.K_c:
+                    main()
         drawCell(grid)
         displayStats(genCount, liveCount)
         grid, liveCount = nextGeneration(grid)
