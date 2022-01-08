@@ -1,29 +1,33 @@
 import pygame
 import random
 
-WIDTH = 200
-HEIGHT = 200
-ROWS = int(WIDTH/20)
-COLS = int(HEIGHT/20)
+BLOCK_SIZE = 20
+WIDTH = 400
+HEIGHT = WIDTH + BLOCK_SIZE
+ROWS = int(WIDTH/BLOCK_SIZE)
+COLS = int(HEIGHT/BLOCK_SIZE)
 WHITE = (255, 255, 255)
 BLACK = (0, 0 , 0)
 SILVER = (192, 192, 192)
-BLOCK_SIZE = 20
-
+RED = (255, 0 , 0)
 def intialGeneration():
     array = []
+    liveCount = 0
     for y in range(ROWS):
         col = []
         for x in range(COLS):
-            col.append(random.randint(0, 1))
+            state = random.randint(0, 1)
+            col.append(state)
+            if state == 1:
+                liveCount += 1
         array.append(col)
-    return array
+    return array, liveCount
 
 def printGrid(array):
     for y in array:
         print(y)
 
-def drawLiveCell(array):
+def drawCell(array):
     gameDisplay.fill(WHITE)
 
     for y in range(ROWS):
@@ -35,7 +39,6 @@ def drawLiveCell(array):
 
 def countNeighbors(row, col, array):
     sumNeighbors = 0
-    coordinates = []
     
     Top = row - 1
     Down = row + 2
@@ -64,6 +67,7 @@ def countNeighbors(row, col, array):
 
 def nextGeneration(array):
     newGrid = []
+    liveCount = 0
     for y in range(ROWS):
         col = []
         for x in range(COLS):
@@ -75,30 +79,43 @@ def nextGeneration(array):
             elif state == 0:
                 if sum == 3:
                     state = 1
+            if state == 1:
+                liveCount += 1
             col.append(state)
         newGrid.append(col)
-    return newGrid
-    
+    return newGrid, liveCount
+
+def displayStats(genCount, liveCount):
+    message = pygame.font.SysFont("arial", BLOCK_SIZE).render("Generation: " + str(genCount) + " Live Cells: " + str(liveCount), True, RED)
+    gameDisplay.blit(message, [0, HEIGHT-BLOCK_SIZE])
+
 def main():
     global gameDisplay
     pygame.init()
     gameDisplay = pygame.display.set_mode([WIDTH, HEIGHT])
     pygame.display.set_caption("Game of Life")
 
+    # Counter
+    genCount = 0
+    liveCount = 0 
+
     # Store cell states
     grid = []
-    grid = intialGeneration()
+    grid, liveCount = intialGeneration()
     printGrid(grid)
 
     simulationExit = False
-    
+
     while not simulationExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 simulationExit = True
                     
-        drawLiveCell(grid)
-        grid = nextGeneration(grid)
+        drawCell(grid)
+        displayStats(genCount, liveCount)
+        grid, liveCount = nextGeneration(grid)
         pygame.display.flip()
+
+        genCount += 1
 
 main()
