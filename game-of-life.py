@@ -2,14 +2,16 @@ import pygame
 import random
 
 BLOCK_SIZE = 20
-WIDTH = 400
-HEIGHT = WIDTH + BLOCK_SIZE
+WIDTH = 800
+HEIGHT = WIDTH + (BLOCK_SIZE*2)
 ROWS = int(WIDTH/BLOCK_SIZE)
 COLS = int(HEIGHT/BLOCK_SIZE)
 WHITE = (255, 255, 255)
 BLACK = (0, 0 , 0)
 SILVER = (192, 192, 192)
 RED = (255, 0 , 0)
+FPS = 20
+
 def intialGeneration():
     array = []
     liveCount = 0
@@ -22,10 +24,6 @@ def intialGeneration():
                 liveCount += 1
         array.append(col)
     return array, liveCount
-
-def printGrid(array):
-    for y in array:
-        print(y)
 
 def drawCell(array):
     gameDisplay.fill(WHITE)
@@ -57,12 +55,9 @@ def countNeighbors(row, col, array):
     
     for i in range(Top, Down):
         for j in range(Left, Right):
-            print(Top, Down)
             sumNeighbors += array[i][j]
     
     sumNeighbors -= array[row][col]
-
-    print("sum:" + str(sumNeighbors))
     return sumNeighbors
 
 def nextGeneration(array):
@@ -86,13 +81,14 @@ def nextGeneration(array):
     return newGrid, liveCount
 
 def displayStats(genCount, liveCount):
-    message = pygame.font.SysFont("arial", BLOCK_SIZE).render("Generation: " + str(genCount) + " Live Cells: " + str(liveCount), True, RED)
-    gameDisplay.blit(message, [0, HEIGHT-BLOCK_SIZE])
+    message = pygame.font.SysFont("arial", BLOCK_SIZE * 2).render("Generation: " + str(genCount) + " Live Cells: " + str(liveCount), True, RED)
+    gameDisplay.blit(message, [0, HEIGHT-BLOCK_SIZE*2])
 
 def main():
     global gameDisplay
     pygame.init()
     gameDisplay = pygame.display.set_mode([WIDTH, HEIGHT])
+    gameClock = pygame.time.Clock()
     pygame.display.set_caption("Game of Life")
 
     # Counter
@@ -102,7 +98,6 @@ def main():
     # Store cell states
     grid = []
     grid, liveCount = intialGeneration()
-    printGrid(grid)
 
     simulationExit = False
 
@@ -115,7 +110,7 @@ def main():
         displayStats(genCount, liveCount)
         grid, liveCount = nextGeneration(grid)
         pygame.display.flip()
-
+        gameClock.tick(FPS)
         genCount += 1
 
 main()
